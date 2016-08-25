@@ -1,13 +1,14 @@
 version: '2.0'
 
 services:
-  node1.oneprovider.onedata.example.com:
-    image: onedata/oneprovider:3.0.0-beta5
-    hostname: node.localhost.local
+  node1.oneprovider.localhost:
+    image: onedata/oneprovider:3.0.0-RC3
+    hostname: node1.oneprovider.localhost
+    # dns: 8.8.8.8 # uncomment if container can't ping any domain
+    container_name: oneprovider-1
     volumes:
-        - "${ONEPROVIDER_CONFIG_DIR}:/volumes/persistency"
+        - "${ONEPROVIDER_CONFIG_DIR}:/volumes/persistence"
         - "${ONEPROVIDER_DATA_DIR}:/volumes/storage"
-        - "${ONEPROVIDER_APP_CONFIG_PATH}:/volumes/persistency/etc/op_worker/app.config"
         - "/var/run/docker.sock:/var/run/docker.sock"
     ports:
       - "53:53"
@@ -18,9 +19,8 @@ services:
       - "5556:5556"
       - "6665:6665"
       - "6666:6666"
+      - "7443:7443"
       - "8443:8443"
       - "8876:8876"
       - "8877:8877"
       - "9443:9443"
-    extra_hosts:
-      - "onedata.example.com:${ONEZONE_IP}"
