@@ -1,8 +1,6 @@
 #!/bin/bash
 # POSIX
 
-SPACES_DIR="${PWD}/Spaces/"
-
 # Error handling.
 # $1 - error string
 die() {
@@ -12,7 +10,7 @@ die() {
 
 # As the name suggests
 usage() {
-  echo "Usage: ${0##*/}  [-h] [ --onezone  | --oneprovider ] [ -n  | --node ]
+  echo "Usage: ${0##*/}  [-h] --token <token hash> --provider <provider ip> 
 
 This script starts Oneclient components:
 
@@ -26,8 +24,7 @@ Options:
   -h, --help         display this help and exit
   -t, --token        authorization token
   -p, --provider     ip or hostname of provider you want to connect to
-  -m, --mount-point  a directory where you what docker to mount your spaces. 
-                     WARNING: the content of this directory will be mounted as a root user."
+  -d, --detach       run container in background and print container name"
   exit 0
 }
 
@@ -36,6 +33,7 @@ main() {
   local token
   local provider
   local mount_point
+  local compose_up_opts=""
 
   if [ ! -z "$ONECLIENT_AUTHORIZATION_TOKEN" ]; then
     token=$ONECLIENT_AUTHORIZATION_TOKEN
@@ -63,6 +61,9 @@ main() {
               mount_point=$2
               shift
               ;;
+          -d | --detach)
+              compose_up_opts="$compose_up_opts -d"
+              ;;
           -?*)
               printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
               exit 1
@@ -82,16 +83,9 @@ main() {
     echo "No provider supplied. Assuming \"localhost\"."
     provider="localhost"
   fi
-
-  if [ -z "$mount_point" ]; then
-    echo "No mount point supplied. Using \"./Spaces\" directory."
-    mount_point=$SPACES_DIR
-  fi
-
-  mkdir -p $mount_point
   
   service='oneclient'
-  ONECLIENT_AUTHORIZATION_TOKEN=$token MOUNT_POINT=$mount_point PROVIDER_HOSTNAME=$provider docker-compose -f "docker-compose-${service}.yml" up "oneclient"
+  ONECLIENT_AUTHORIZATION_TOKEN=$token PROVIDER_HOSTNAME=$provider docker-compose -f "docker-compose-${service}.yml" up ${compose_up_opts} "oneclient"
   
 }
 
